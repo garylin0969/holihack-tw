@@ -43,7 +43,7 @@ const CustomDayButton = (props: ComponentProps<typeof DayButton>) => {
             {props.children}
             {/* 顯示備註文字，若無備註則顯示空白佔位 */}
             {description && (
-                <HoverCard openDelay={10} closeDelay={10}>
+                <HoverCard openDelay={0} closeDelay={0}>
                     <HoverCardTrigger asChild>
                         <span className="truncate w-full px-0.5 line-clamp-1">{description}</span>
                     </HoverCardTrigger>
