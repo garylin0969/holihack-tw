@@ -6,6 +6,7 @@ import { zhTW } from 'date-fns/locale';
 import { useIsMounted } from '@/hooks';
 import holidayData from '@/data/processed/2026.json';
 import type { DayButton } from 'react-day-picker';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 /** 將 YYYYMMDD 格式字串轉換為 Date 物件 */
 const parseDate = (dateStr: string): Date => {
@@ -41,9 +42,17 @@ const CustomDayButton = (props: ComponentProps<typeof DayButton>) => {
             {/* 顯示原本的日期數字 */}
             {props.children}
             {/* 顯示備註文字，若無備註則顯示空白佔位 */}
-            <span title={description} className="truncate w-full line-clamp-1">
-                {description || '\u00A0'}
-            </span>
+            {description && (
+                <HoverCard openDelay={10} closeDelay={10}>
+                    <HoverCardTrigger asChild>
+                        <span className="truncate w-full px-0.5 line-clamp-1">{description}</span>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="flex w-64 flex-col gap-0.5">
+                        <div>{props['aria-label']}</div>
+                        <div className="text-muted-foreground mt-1">{description}</div>
+                    </HoverCardContent>
+                </HoverCard>
+            )}
         </CalendarDayButton>
     );
 };
