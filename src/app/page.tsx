@@ -23,52 +23,44 @@ const formatDateKey = (date: Date): string => {
     return `${year}${month}${day}`;
 };
 
+/** 日期到備註的對應表（模組層級常數，只建立一次） */
+const descriptionMap = new Map<string, string>(
+    holidayData.filter((d) => d.description).map((d) => [d.date, d.description]),
+);
+
+/** 假日日期陣列（模組層級常數，只建立一次） */
+const holidayDates = holidayData.filter((d) => d.isHoliday).map((d) => parseDate(d.date));
+
+/** 自訂 DayButton 元件：在日期下方顯示備註 */
+function CustomDayButton(props: React.ComponentProps<typeof DayButton>) {
+    const dateKey = formatDateKey(props.day.date);
+    const description = descriptionMap.get(dateKey);
+
+    return (
+        <CalendarDayButton {...props}>
+            {/* 顯示原本的日期數字 */}
+            {props.children}
+            {/* 顯示備註文字，若無備註則顯示空白佔位 */}
+            <span title={description} className="truncate text-[0.6rem] leading-tight opacity-80 w-full line-clamp-1">
+                {description || '\u00A0'}
+            </span>
+        </CalendarDayButton>
+    );
+}
+
 const Home = () => {
     const isMounted = useIsMounted();
 
-    /** 取得所有假日的 Date 陣列 */
-    const holidayDates = useMemo(() => holidayData.filter((d) => d.isHoliday).map((d) => parseDate(d.date)), []);
-
-    /** 建立日期到備註的對應表（僅包含有備註的日期） */
-    const descriptionMap = useMemo(() => {
-        const map = new Map<string, string>();
-        holidayData.forEach((d) => {
-            if (d.description) {
-                map.set(d.date, d.description);
-            }
-        });
-        return map;
-    }, []);
-
-    /** 自訂 DayButton 元件：在日期下方顯示備註 */
-    const CustomDayButton = useMemo(() => {
-        return function CustomDayButton(props: React.ComponentProps<typeof DayButton>) {
-            const dateKey = formatDateKey(props.day.date);
-            const description = descriptionMap.get(dateKey);
-
-            return (
-                <CalendarDayButton {...props}>
-                    {/* 顯示原本的日期數字 */}
-                    {props.children}
-                    {/* 顯示備註文字，若無備註則顯示空白佔位 */}
-                    <span
-                        title={description}
-                        className="truncate text-[0.6rem] leading-tight opacity-80 w-full line-clamp-1"
-                    >
-                        {description || '\u00A0'}
-                    </span>
-                </CalendarDayButton>
-            );
-        };
-    }, [descriptionMap]);
+    // 使用 useMemo 確保 components 物件參考穩定
+    const components = useMemo(() => ({ DayButton: CustomDayButton }), []);
 
     if (!isMounted) return null; // 避免日期轉換造成 hydration error
 
     return (
         <>
             <Calendar
-                // 選擇模式：single=單選 / range=範圍選擇 / multiple=多選
-                mode="single"
+                // 選擇模式：multiple=多選（讓使用者可以選擇多個日期）
+                mode="multiple"
                 // 日曆外框樣式
                 className="rounded-lg border shadow"
                 // 語系設定，使用繁體中文
@@ -97,9 +89,7 @@ const Home = () => {
                     months: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4',
                 }}
                 // 自訂元件：使用帶有備註顯示的 DayButton
-                components={{
-                    DayButton: CustomDayButton,
-                }}
+                components={components}
             />
         </>
     );
