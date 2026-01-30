@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
 import { zhTW } from 'date-fns/locale';
 import { useIsMounted } from '@/hooks';
@@ -51,8 +51,21 @@ function CustomDayButton(props: React.ComponentProps<typeof DayButton>) {
 const Home = () => {
     const isMounted = useIsMounted();
 
+    // 受控的選擇狀態
+    const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+
+    // useTransition: 將狀態更新標記為低優先級，讓 UI 保持響應
+    const [, startTransition] = useTransition();
+
     // 使用 useMemo 確保 components 物件參考穩定
     const components = useMemo(() => ({ DayButton: CustomDayButton }), []);
+
+    // 處理日期選擇，使用 transition 讓更新不阻塞 UI
+    const handleSelect = (dates: Date[] | undefined) => {
+        startTransition(() => {
+            setSelectedDates(dates ?? []);
+        });
+    };
 
     if (!isMounted) return null; // 避免日期轉換造成 hydration error
 
@@ -61,6 +74,10 @@ const Home = () => {
             <Calendar
                 // 選擇模式：multiple=多選（讓使用者可以選擇多個日期）
                 mode="multiple"
+                // 受控的選擇狀態
+                selected={selectedDates}
+                // 選擇事件處理（使用 transition 優化）
+                onSelect={handleSelect}
                 // 日曆外框樣式
                 className="rounded-lg border shadow"
                 // 語系設定，使用繁體中文
