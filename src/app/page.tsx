@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
 import { zhTW } from 'date-fns/locale';
 import { useIsMounted } from '@/hooks';
@@ -57,8 +57,8 @@ const Home = () => {
     // useTransition: 將狀態更新標記為低優先級，讓 UI 保持響應
     const [, startTransition] = useTransition();
 
-    // 使用 useMemo 確保 components 物件參考穩定
-    const components = useMemo(() => ({ DayButton: CustomDayButton }), []);
+    // React Compiler 會自動處理 memoization，不需要手動 useMemo
+    const components = { DayButton: CustomDayButton };
 
     // 處理日期選擇，使用 transition 讓更新不阻塞 UI
     const handleSelect = (dates: Date[] | undefined) => {
