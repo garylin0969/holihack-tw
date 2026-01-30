@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { ComponentProps, useState, useTransition } from 'react';
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
 import { zhTW } from 'date-fns/locale';
 import { useIsMounted } from '@/hooks';
@@ -32,7 +32,7 @@ const descriptionMap = new Map<string, string>(
 const holidayDates = holidayData.filter((d) => d.isHoliday).map((d) => parseDate(d.date));
 
 /** 自訂 DayButton 元件：在日期下方顯示備註 */
-function CustomDayButton(props: React.ComponentProps<typeof DayButton>) {
+const CustomDayButton = (props: ComponentProps<typeof DayButton>) => {
     const dateKey = formatDateKey(props.day.date);
     const description = descriptionMap.get(dateKey);
 
@@ -41,12 +41,12 @@ function CustomDayButton(props: React.ComponentProps<typeof DayButton>) {
             {/* 顯示原本的日期數字 */}
             {props.children}
             {/* 顯示備註文字，若無備註則顯示空白佔位 */}
-            <span title={description} className="truncate text-[0.6rem] leading-tight opacity-80 w-full line-clamp-1">
+            <span title={description} className="truncate w-full line-clamp-1">
                 {description || '\u00A0'}
             </span>
         </CalendarDayButton>
     );
-}
+};
 
 const Home = () => {
     const isMounted = useIsMounted();
@@ -101,7 +101,7 @@ const Home = () => {
                 // 覆寫內部元素的 CSS 類別
                 classNames={{
                     // 因為要放文字，建議把格子撐大一點
-                    day: 'h-12 w-12 p-0 font-normal aria-selected:opacity-100',
+                    day: 'h-12 w-12 p-0',
                     // 月份容器：使用 grid 排版，響應式調整欄數
                     months: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4',
                 }}
